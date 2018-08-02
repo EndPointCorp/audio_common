@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
 #include <ros/ros.h>
@@ -102,6 +104,8 @@ namespace audio_transport
           gst_object_unref (audiopad);
           return;
         }
+
+        std::cout << "Linking pad with caps: " << gst_caps_to_string(caps) << std::endl;
 
         gst_caps_unref (caps);
 

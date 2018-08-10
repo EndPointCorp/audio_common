@@ -44,11 +44,14 @@ namespace audio_transport
           _audio = gst_bin_new("audiobin");
           _convert = gst_element_factory_make("audioconvert", "convert");
           audiopad = gst_element_get_static_pad(_convert, "sink");
+          _caps = gst_element_factory_make("capsfilter", "caps");
+          g_object_set( G_OBJECT(_caps), "caps", gst_caps_from_string("audio/x-raw, format=S16LE, rate=44100, channels=2"), NULL);
           _sink = gst_element_factory_make("alsasink", "sink");
           g_object_set( G_OBJECT(_sink), "device", dst_device.c_str(), NULL);
           g_object_set( G_OBJECT(_sink), "sync", FALSE, NULL);
-          gst_bin_add_many( GST_BIN(_audio), _convert, _sink, NULL);
-          gst_element_link(_convert, _sink);
+          gst_bin_add_many( GST_BIN(_audio), _convert, _caps, _sink, NULL);
+          gst_element_link(_convert, _caps);
+          gst_element_link(_caps, _sink);
           gst_element_add_pad(_audio, gst_ghost_pad_new("sink", audiopad));
           gst_object_unref(audiopad);
 
@@ -120,7 +123,7 @@ namespace audio_transport
       ros::Subscriber _sub;
       boost::thread _gst_thread;
 
-      GstElement *_pipeline, *_source, *_sink, *_decoder, *_convert, *_audio;
+      GstElement *_pipeline, *_source, *_sink, *_decoder, *_convert, *_caps, *_audio;
       GstElement *_playbin;
       GMainLoop *_loop;
   };
